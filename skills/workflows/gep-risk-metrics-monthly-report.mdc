@@ -1,0 +1,212 @@
+---
+description: GEP Risk Metrics Monthly Report - Execute monthly partner program risk analysis and save results to reports/GEP_Risk_Metrics_Updates_Monthly.md
+globs:
+alwaysApply: false
+---
+
+# GEP Risk Metrics Monthly Report
+
+## Overview
+
+This skill executes the monthly GEP (Gusto Embedded Payroll) partner program risk metrics analysis and saves the results to `reports/GEP_Risk_Metrics_Updates_Monthly.md`. Use this skill at the beginning of each month to generate the latest leadership-ready risk report.
+
+**Output Location:** `reports/GEP_Risk_Metrics_Updates_Monthly.md`
+
+## When to Use This Skill
+
+- Beginning of each month to generate the previous month's analysis
+- Ad-hoc requests for updated risk metrics
+- When asked to "run the monthly GEP report" or "update the risk metrics report"
+- Preparing for monthly partner program reviews
+
+## Execution Process
+
+### Step 1: Determine Date Range
+
+Calculate the 6-month trailing period ending with the most recent complete month.
+
+**Example (if current date is January 15, 2026):**
+- End month: December 2025 (2025-12-31)
+- Start month: July 2025 (2025-07-01)
+
+### Step 2: Execute Redash Queries
+
+Run all three core queries in parallel:
+
+1. **Query 104845** - Payment failure analysis
+   ```
+   Parameters:
+   - name: "all"
+   - start_month: [calculated start date]
+   - end_month: [calculated end date]
+   ```
+
+2. **Query 143614** - ACH speed adoption trends
+   ```
+   Parameters:
+   - start_date: "2024-01-01"
+   ```
+
+3. **Query 143613** - Partner ACH speed distribution
+   ```
+   Parameters:
+   - min_companies: 10
+   ```
+
+### Step 3: Calculate Portfolio Metrics
+
+From Query 104845 results, calculate:
+
+| Metric | Calculation |
+|--------|-------------|
+| Total Dollars Processed | SUM(PROCESSED_AMOUNT) across all rows |
+| Total Dollars Failed | SUM(AMOUNT_FAILED) across all rows |
+| Weighted Failure Rate | (Total Failed / Total Processed) × 100 |
+| Active Companies | SUM(ACTIVE_COMPANIES) for most recent month only |
+| Total Employees | SUM(EMPLOYEES) for most recent month only |
+
+### Step 4: Generate Monthly Trend Table
+
+For each month in the period:
+- Total Processed (sum across all partners)
+- Total Failed (sum across all partners)
+- Failure Rate (failed/processed × 100)
+- Trend indicator (compare to prior month)
+
+### Step 5: Calculate Payment Type Distribution
+
+Aggregate across all rows:
+- 1-Day: SUM(ONE_DAY_PROCESSED_AMOUNT), SUM(ONE_DAY_FAILED_AMOUNT)
+- 2-Day: SUM(TWO_DAY_PROCESSED_AMOUNT), SUM(TWO_DAY_FAILED_AMOUNT)
+- 4-Day: SUM(FOUR_DAY_PROCESSED_AMOUNT), SUM(FOUR_DAY_FAILED_AMOUNT)
+
+Calculate failure rate for each type: (failed/processed × 100)
+
+### Step 6: Build Partner-Level Metrics
+
+For each unique partner:
+- 6-month total processed
+- Most recent month processed
+- 6-month weighted failure rate
+- Most recent month failure rate
+- Active companies (most recent month)
+- Risk assessment (based on thresholds)
+
+### Step 7: Identify Risk Flags
+
+Flag partners meeting these criteria:
+
+| Flag Type | Threshold |
+|-----------|-----------|
+| 🔴 Critical | Current month fail rate >50% above 6M average |
+| ⚠️ Elevated | Overall fail rate >2.0% |
+| ✅ Strong | Overall fail rate <0.5% or zero failures |
+
+### Step 8: Generate ACH Analysis
+
+From Queries 143614 and 143613:
+- Portfolio Fast ACH trend (Jan 2024 → Current)
+- Partner ACH speed distribution table
+- Migration success stories
+- Strategic opportunities (large partners with low Fast ACH)
+
+### Step 9: Create Leadership Summary
+
+Generate 5 key findings:
+1. Critical issue (highest priority concern)
+2. Resolved/monitoring item
+3. Systemic observation
+4. Anchor partner status
+5. Portfolio health assessment
+
+### Step 10: Save Report
+
+Write the complete analysis to: `reports/GEP_Risk_Metrics_Updates_Monthly.md`
+
+Update the report header with current date and period.
+
+## Report Template
+
+The output report should follow this structure:
+
+```markdown
+# 📊 Partner Program Risk Metrics Analysis
+**Period: [Start Month] - [End Month] [Year]**
+**Report Generated: [Current Date]**
+
+---
+
+## 📈 6-Month Portfolio Summary
+[Portfolio metrics table]
+
+## 📅 Monthly Trend Analysis
+[Monthly trend table]
+
+## 💳 Payment Type Distribution (6-Month)
+[ACH speed breakdown table]
+
+## 🏢 Partner-Level Metrics
+[Top partners table]
+
+## 🚨 Risk Flags & Standouts
+### 🔴 Critical Issues
+### ⚠️ Partners Requiring Attention
+### ✅ Strong Performers
+
+## 🏃 ACH Speed Adoption Analysis
+### Portfolio ACH Trend
+### Partner ACH Speed Distribution
+### ACH Migration Success Stories
+
+## 🎯 Strategic Opportunities
+[High-priority migration targets]
+
+## 📋 Leadership Summary: 5 Key Findings
+[Numbered findings]
+
+## ✅ Recommended Actions
+[Priority/Action/Owner/Timeline table]
+
+## 📎 Data Sources
+[Query links]
+```
+
+## Key Thresholds
+
+| Metric | Good | Caution | Concern |
+|--------|------|---------|---------|
+| Portfolio failure rate | <1.0% | 1.0-2.0% | >2.0% |
+| Partner failure rate | <1.0% | 1.0-3.0% | >3.0% |
+| Month vs 6M deviation | <10% | 10-50% | >50% |
+| Fast ACH adoption | >90% | 50-90% | <50% |
+
+## Example Invocations
+
+**Standard monthly run:**
+> "Run the GEP risk metrics monthly report"
+> "Update the GEP risk report for last month"
+> "Generate the monthly partner risk analysis"
+
+**With specific date range:**
+> "Run the GEP risk report for Q4 2025"
+> "Generate risk metrics for October through December 2025"
+
+## Data Sources
+
+| Query | Purpose | URL |
+|-------|---------|-----|
+| 104845 | Payment failure analysis | https://redash.zp-int.com/queries/104845 |
+| 143614 | ACH adoption trends | https://redash.zp-int.com/queries/143614 |
+| 143613 | Partner ACH snapshot | https://redash.zp-int.com/queries/143613 |
+
+## Related Skills
+
+- `partner-program-risk-metrics-analysis.mdc` - Detailed methodology documentation
+- For partner deep dives, use Query 104845 with specific partner name filter
+
+## Notes
+
+- Always run at beginning of month for complete prior month data
+- December typically shows elevated volume (year-end payroll)
+- 4-Day ACH consistently shows 2-3x higher failure rates than Fast ACH
+- Report is designed for direct copy/paste into Google Docs

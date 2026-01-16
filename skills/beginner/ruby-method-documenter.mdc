@@ -1,0 +1,235 @@
+---
+description: Adds RDoc documentation to Ruby methods with params, returns, and examples
+globs: "*.rb"
+alwaysApply: false
+---
+
+# Ruby Method Documenter
+
+## Overview
+
+Automatically generates RDoc-style documentation for Ruby methods. This skill creates consistent, informative method documentation that helps other developers understand your code.
+
+## When to Use
+
+- Before committing new methods
+- When reviewing undocumented code
+- Preparing code for a gem or shared library
+- Improving codebase documentation
+
+## Guidelines
+
+When asked to document a method:
+
+### Step 1: Write the Description
+
+- First line: Brief summary (one sentence)
+- Following lines: Additional context if needed
+- Focus on WHAT and WHY, not HOW
+
+### Step 2: Document Parameters
+
+Use `@param` tags:
+```ruby
+# @param name [Type] Description of the parameter
+```
+
+Common types:
+- `String`, `Integer`, `Float`, `Boolean`
+- `Array<Type>` for typed arrays
+- `Hash` or `Hash{KeyType => ValueType}`
+- `nil` if parameter can be nil
+- `Type, nil` for optional parameters
+
+### Step 3: Document Return Value
+
+Use `@return` tag:
+```ruby
+# @return [Type] Description of what's returned
+```
+
+For methods that might return nil:
+```ruby
+# @return [Type, nil] Description, nil if condition
+```
+
+### Step 4: Add Examples (When Helpful)
+
+```ruby
+# @example
+#   method_name(arg1, arg2) #=> expected_result
+```
+
+### Step 5: Add Raises (If Applicable)
+
+```ruby
+# @raise [ErrorType] When this error occurs
+```
+
+## Output Format
+
+```ruby
+# Brief one-line description of the method.
+#
+# Longer description if needed, explaining context,
+# edge cases, or important behavior.
+#
+# @param param_name [Type] What this parameter represents
+# @param another_param [Type] What this parameter represents
+# @return [ReturnType] What the method returns
+#
+# @example
+#   method_name("input") #=> "output"
+#
+# @raise [ErrorType] When this happens
+def method_name(param_name, another_param)
+  # implementation
+end
+```
+
+## Examples
+
+### Example 1: Simple Method
+
+**Before:**
+```ruby
+def calculate_net_pay(gross_pay, deductions)
+  gross_pay - deductions.sum
+end
+```
+
+**After:**
+```ruby
+# Calculates employee net pay after all deductions.
+#
+# @param gross_pay [BigDecimal] Total pay before deductions
+# @param deductions [Array<BigDecimal>] List of deduction amounts
+# @return [BigDecimal] Net pay amount
+#
+# @example
+#   calculate_net_pay(5000, [100, 50, 200]) #=> 4650
+def calculate_net_pay(gross_pay, deductions)
+  gross_pay - deductions.sum
+end
+```
+
+### Example 2: Method with Options Hash
+
+**Before:**
+```ruby
+def find_employees(company_id, options = {})
+  scope = Employee.where(company_id: company_id)
+  scope = scope.active if options[:active_only]
+  scope = scope.limit(options[:limit]) if options[:limit]
+  scope
+end
+```
+
+**After:**
+```ruby
+# Finds employees for a company with optional filtering.
+#
+# @param company_id [Integer] The company to search within
+# @param options [Hash] Optional filters and limits
+# @option options [Boolean] :active_only (false) Only return active employees
+# @option options [Integer] :limit Maximum number of results
+# @return [ActiveRecord::Relation<Employee>] Matching employees
+#
+# @example Find all active employees
+#   find_employees(123, active_only: true)
+#
+# @example Find first 10 employees
+#   find_employees(123, limit: 10)
+def find_employees(company_id, options = {})
+  scope = Employee.where(company_id: company_id)
+  scope = scope.active if options[:active_only]
+  scope = scope.limit(options[:limit]) if options[:limit]
+  scope
+end
+```
+
+### Example 3: Method That May Raise
+
+**Before:**
+```ruby
+def process_payroll!(payroll)
+  raise PayrollError, "Already processed" if payroll.processed?
+  
+  payroll.calculate_totals
+  payroll.submit_payments
+  payroll.mark_processed!
+end
+```
+
+**After:**
+```ruby
+# Processes a payroll, calculating totals and submitting payments.
+#
+# This is a destructive operation that cannot be undone. The payroll
+# will be marked as processed and payments will be initiated.
+#
+# @param payroll [Payroll] The payroll to process
+# @return [Payroll] The processed payroll
+#
+# @raise [PayrollError] If the payroll has already been processed
+#
+# @example
+#   payroll = Payroll.find(123)
+#   process_payroll!(payroll)
+def process_payroll!(payroll)
+  raise PayrollError, "Already processed" if payroll.processed?
+  
+  payroll.calculate_totals
+  payroll.submit_payments
+  payroll.mark_processed!
+end
+```
+
+## Common Patterns
+
+### Boolean Return
+
+```ruby
+# Checks if the employee is eligible for benefits.
+#
+# @param employee [Employee] The employee to check
+# @return [Boolean] true if eligible, false otherwise
+def eligible_for_benefits?(employee)
+```
+
+### Void Methods
+
+```ruby
+# Sends a notification email to the user.
+#
+# @param user [User] The recipient
+# @param message [String] The message content
+# @return [void]
+def send_notification(user, message)
+```
+
+### Class Methods
+
+```ruby
+# Creates a new payroll for the given pay period.
+#
+# @param company [Company] The company running payroll
+# @param pay_period [PayPeriod] The period to pay for
+# @return [Payroll] The newly created payroll
+def self.create_for_period(company, pay_period)
+```
+
+## Common Mistakes to Avoid
+
+- ❌ Documenting obvious getters: `# Returns the name`
+- ✅ Only document when it adds value
+
+- ❌ Restating the code: `# Adds a and b together`
+- ✅ Explain the purpose: `# Calculates total compensation`
+
+- ❌ Missing edge cases
+- ✅ Document nil returns, empty arrays, etc.
+
+## Related Skills
+
+- `explain-code-simply.mdc` - For plain-English explanations

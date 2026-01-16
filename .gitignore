@@ -1,0 +1,18 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Personal/local skills (not shared)
+skills/personal/
+skills/_*
+
+# Temporary files
+*.tmp
+*.log

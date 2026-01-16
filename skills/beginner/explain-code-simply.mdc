@@ -1,0 +1,138 @@
+---
+description: Explains code in plain English for non-engineers using everyday analogies
+alwaysApply: false
+---
+
+# Explain Code Simply
+
+## Overview
+
+This skill helps explain code in plain, non-technical language. Perfect for explaining code to:
+- Non-engineering stakeholders
+- New team members unfamiliar with the domain
+- Yourself when you need a fresh perspective
+
+## When to Use
+
+- Preparing to explain a feature to product managers
+- Writing documentation for non-technical users
+- Understanding legacy code at a high level
+- Onboarding new team members
+
+## Guidelines
+
+When asked to explain code:
+
+### Step 1: Identify the Purpose
+
+Start with what the code DOES, not how it does it.
+- What problem does it solve?
+- What would happen if this code didn't exist?
+
+### Step 2: Use Everyday Analogies
+
+Connect technical concepts to familiar experiences:
+- Database → Filing cabinet
+- API → Waiter taking your order
+- Loop → Checking each item in a grocery bag
+- Conditional → Fork in the road
+
+### Step 3: Avoid Jargon
+
+If you must use a technical term:
+1. Use the simple word first
+2. Add the technical term in parentheses
+3. Never assume knowledge of programming concepts
+
+### Step 4: Keep It Brief
+
+- 2-3 short paragraphs maximum
+- One main idea per paragraph
+- End with the "so what" — why this matters
+
+## Examples
+
+### Example 1: Ruby Method
+
+**User asks:** "What does this method do?"
+
+```ruby
+def calculate_overtime(hours)
+  return 0 if hours <= 40
+  (hours - 40) * 1.5
+end
+```
+
+**Good response:**
+
+"This code figures out overtime pay. Here's the rule: if someone works 40 hours or less, they get zero overtime. But for every hour beyond 40, it counts as 1.5 hours (that's time-and-a-half).
+
+So if someone works 45 hours, the code calculates: 5 extra hours × 1.5 = 7.5 overtime units. The payroll system then multiplies this by their hourly rate."
+
+### Example 2: Database Query
+
+**User asks:** "What is this SQL doing?"
+
+```sql
+SELECT company_name, COUNT(*) as employee_count
+FROM companies
+JOIN employees ON companies.id = employees.company_id
+WHERE employees.status = 'active'
+GROUP BY company_name
+HAVING COUNT(*) > 100;
+```
+
+**Good response:**
+
+"This is like asking: 'Show me all companies that have more than 100 active employees, and tell me exactly how many each one has.'
+
+Imagine you have two filing cabinets — one for companies and one for employees. This code looks through both, counts how many active employees belong to each company, and only shows you the big companies (100+ employees).
+
+This might be used for identifying which companies need enterprise-level support, or for billing purposes."
+
+### Example 3: React Component
+
+**User asks:** "What does this component do?"
+
+```jsx
+const PayrollStatus = ({ payroll }) => {
+  if (payroll.status === 'processing') {
+    return <Spinner />;
+  }
+  return <Badge status={payroll.status}>{payroll.status}</Badge>;
+};
+```
+
+**Good response:**
+
+"This is the little status indicator you see next to each payroll. It works like a traffic light:
+
+- If the payroll is still being processed, it shows a spinning animation (like a loading wheel)
+- Once it's done, it shows a colored badge with the status (like 'Complete' or 'Failed')
+
+This helps users know at a glance whether they need to wait or take action."
+
+## Common Mistakes to Avoid
+
+- ❌ "The function iterates over the array using a map callback"
+- ✅ "The code looks at each item in the list, one by one"
+
+- ❌ "It returns early if the condition is falsy"
+- ✅ "It stops immediately if there's nothing to do"
+
+- ❌ Starting with implementation details
+- ✅ Starting with the purpose and end result
+
+## Tips for Different Audiences
+
+| Audience | Focus On | Avoid |
+|----------|----------|-------|
+| Product Manager | Business impact, user experience | Technical implementation |
+| Designer | What users see/interact with | Backend logic |
+| Support Team | How it affects customers | Code structure |
+| New Engineer | Patterns and conventions | Deep optimization details |
+
+## Related Skills
+
+- `ruby-method-documenter.mdc` - For generating code comments
+- `code-review-checklist.mdc` - For reviewing code quality

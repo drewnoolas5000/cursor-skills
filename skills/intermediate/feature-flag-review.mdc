@@ -1,0 +1,222 @@
+---
+description: Reviews feature flag usage and recommends cleanup actions
+alwaysApply: false
+---
+
+# Feature Flag Review
+
+## Overview
+
+Analyzes feature flag usage across the codebase to determine if flags are ready to be made permanent or removed. Helps keep the codebase clean by identifying stale flags.
+
+## When to Use
+
+- Quarterly flag cleanup reviews
+- Before making a flag permanent
+- When investigating technical debt
+- When asked "should we remove this flag?"
+
+## Guidelines
+
+### Step 1: Find All Usages
+
+Search for the feature flag name across the codebase:
+
+**Ruby files:**
+```ruby
+with_feature_flag(:flag_name)
+feature_enabled?(:flag_name)
+```
+
+**Specs:**
+```ruby
+with_feature_flag(:flag_name, enabled: true)
+with_feature_flag(:flag_name, enabled: false)
+```
+
+**Views:**
+```erb
+<% if feature_enabled?(:flag_name) %>
+```
+
+### Step 2: Check Flag Configuration
+
+Look in `config/teams/*.yml` for:
+
+| Field | Meaning |
+|-------|---------|
+| `expected_removal_date` | When flag should be cleaned up |
+| `permanent` | Flag is intentionally permanent |
+| `owner` | Team responsible for cleanup |
+| `description` | Original purpose |
+
+### Step 3: Analyze Usage Patterns
+
+Determine:
+
+| Question | Why It Matters |
+|----------|----------------|
+| Is it always enabled in production? | Ready for cleanup if yes |
+| Are there specs testing "off" behavior? | Need to remove those specs |
+| Is there dead code behind the flag? | Code to delete |
+| Is the feature fully launched? | Safe to make permanent |
+
+### Step 4: Check Production State
+
+If available, query the feature flag service:
+- Current rollout percentage
+- When it was last changed
+- How long at 100%
+
+### Step 5: Provide Recommendation
+
+Output one of:
+
+| Recommendation | Criteria | Action |
+|----------------|----------|--------|
+| **Make Permanent** | 100% rollout, no issues, past removal date | Remove flag, keep feature code |
+| **Remove Flag + Code** | Flag disabled, feature deprecated | Delete flag and all gated code |
+| **Keep Monitoring** | Recently launched, needs more time | Set new review date |
+| **Needs Investigation** | Mixed signals, unclear state | Discuss with owner team |
+
+## Output Format
+
+```markdown
+## Feature Flag Review: `:flag_name`
+
+### Summary
+| Attribute | Value |
+|-----------|-------|
+| Flag Name | `:flag_name` |
+| Owner Team | [team name] |
+| Expected Removal | [date] |
+| Production State | [enabled/disabled/partial] |
+| Usages Found | [count] |
+
+### Usage Locations
+
+| File | Line | Usage Type |
+|------|------|------------|
+| path/to/file.rb | 45 | Conditional |
+| path/to/spec.rb | 123 | Test setup |
+
+### Recommendation
+
+**[Make Permanent / Remove / Keep / Investigate]**
+
+[Explanation of recommendation]
+
+### Cleanup Steps
+
+1. [ ] [First action]
+2. [ ] [Second action]
+3. [ ] [Third action]
+```
+
+## Examples
+
+### Example 1: Flag Ready for Cleanup
+
+**User:** "Review the payroll_v2 feature flag"
+
+**Response:**
+
+```markdown
+## Feature Flag Review: `:payroll_v2`
+
+### Summary
+| Attribute | Value |
+|-----------|-------|
+| Flag Name | `:payroll_v2` |
+| Owner Team | Payroll Platform |
+| Expected Removal | 2025-06-01 (6 months ago) |
+| Production State | 100% enabled since Jan 2025 |
+| Usages Found | 12 |
+
+### Usage Locations
+
+| File | Line | Usage Type |
+|------|------|------------|
+| app/services/payroll_calculator.rb | 45 | Conditional |
+| app/controllers/payrolls_controller.rb | 23 | Conditional |
+| spec/services/payroll_calculator_spec.rb | 89 | Test (enabled) |
+| spec/services/payroll_calculator_spec.rb | 145 | Test (disabled) |
+... (8 more)
+
+### Recommendation
+
+**✅ Make Permanent**
+
+This flag has been:
+- 100% enabled for 12+ months
+- Past expected removal date by 6 months
+- No incidents related to the feature
+
+### Cleanup Steps
+
+1. [ ] Update config/teams/payroll.yml: add `permanent: true`
+2. [ ] Remove flag conditionals from 10 Ruby files
+3. [ ] Delete 2 specs testing the "disabled" path
+4. [ ] Remove `expected_removal_date` from config
+```
+
+### Example 2: Flag Needs Investigation
+
+**User:** "Review the new_tax_engine feature flag"
+
+**Response:**
+
+```markdown
+## Feature Flag Review: `:new_tax_engine`
+
+### Summary
+| Attribute | Value |
+|-----------|-------|
+| Flag Name | `:new_tax_engine` |
+| Owner Team | Tax Platform |
+| Expected Removal | 2025-03-01 |
+| Production State | 75% rollout |
+| Usages Found | 34 |
+
+### Recommendation
+
+**🔍 Needs Investigation**
+
+Concerns:
+- Still at 75% rollout (not fully launched)
+- 3 weeks until expected removal date
+- Found error tracking for "new_tax_engine" in Datadog
+
+### Questions for Owner Team
+
+1. Why is rollout paused at 75%?
+2. Are the Datadog errors blocking full rollout?
+3. Should expected_removal_date be extended?
+
+### Suggested Next Steps
+
+1. [ ] Slack #tax-platform about rollout status
+2. [ ] Review Datadog errors
+3. [ ] Update expected_removal_date if needed
+```
+
+## Common Mistakes to Avoid
+
+- ❌ Making permanent without checking production state
+- ✅ Always verify flag is 100% enabled first
+
+- ❌ Only searching `.rb` files
+- ✅ Also search `.erb`, `.haml`, `.rake`, specs
+
+- ❌ Removing code without checking for specs
+- ✅ Update specs that test disabled behavior
+
+## Related Skills
+
+- `make-feature-flag-permanent.mdc` - Step-by-step cleanup process
+- `code-review-checklist.mdc` - For reviewing cleanup PRs
+
+## References
+
+- Feature flag documentation: [internal wiki link]
+- Team config files: `config/teams/*.yml`

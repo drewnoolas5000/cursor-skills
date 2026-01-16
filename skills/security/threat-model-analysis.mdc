@@ -1,0 +1,280 @@
+---
+description: Perform STRIDE threat model analysis on code to identify security vulnerabilities
+alwaysApply: false
+---
+
+# Security Threat Model (STRIDE)
+
+## Overview
+
+Performs comprehensive security threat modeling using the STRIDE framework (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege). Analyzes Ruby on Rails and TypeScript/JavaScript code for security vulnerabilities.
+
+## When to Use
+
+- Security review of new features
+- Pre-production security audit
+- Investigating potential vulnerabilities
+- Compliance requirements (SOC2, PCI-DSS)
+- Training on secure coding practices
+
+## Guidelines
+
+### Analysis Scope
+
+Analyze code in the current context (selected files or directory). For each finding, provide:
+
+- **Threat**: Concise vulnerability description
+- **Location**: Exact file path and line numbers
+- **Risk/Impact**: Worst-case scenario summary
+- **Mitigation**: Specific, actionable code-level fix
+
+### Vulnerability Categories
+
+#### Ruby/Rails Vulnerabilities
+
+| Vulnerability | Pattern to Find |
+|--------------|-----------------|
+| Mass Assignment | `params.permit!`, missing strong params |
+| Insecure Output | `html_safe`, `raw`, `render inline:` |
+| SQL Injection | String interpolation in queries |
+| CSRF | `skip_before_action :verify_authenticity_token` |
+| Dangerous Methods | `eval`, `send`, `constantize`, `instance_eval` |
+| Deserialization | `Marshal.load`, unsafe `YAML.load` |
+
+#### TypeScript/JavaScript Vulnerabilities
+
+| Vulnerability | Pattern to Find |
+|--------------|-----------------|
+| XSS | `.innerHTML`, `dangerouslySetInnerHTML` |
+| Code Injection | `eval()`, `Function()`, unsafe `child_process` |
+| Path Traversal | Unsanitized paths in `fs` operations |
+| SSRF | Unvalidated URLs in fetch/axios |
+| Hardcoded Secrets | API keys, tokens in source |
+| Prototype Pollution | Unsafe object merging |
+
+#### AI/LLM-Specific Vulnerabilities
+
+| Vulnerability | Pattern to Find |
+|--------------|-----------------|
+| Prompt Injection | User input passed directly to prompts |
+| Data Exposure | PII in logs, LLM output, training data |
+| Unbounded Consumption | Missing rate limiting on AI APIs |
+| Output Validation | LLM output used without sanitization |
+
+### STRIDE Categories
+
+Organize findings under these six categories:
+
+1. **S - Spoofing Identity**: Authentication bypass, credential theft
+2. **T - Tampering with Data**: Data manipulation, injection attacks
+3. **R - Repudiation**: Missing audit trails, logging gaps
+4. **I - Information Disclosure**: Data leaks, PII exposure
+5. **D - Denial of Service**: Resource exhaustion, availability issues
+6. **E - Elevation of Privilege**: Authorization bypass, privilege escalation
+
+## Output Format
+
+```markdown
+# Security Threat Model - [Target Name]
+
+## S - Spoofing Identity
+[Findings or "No critical issues found"]
+
+## T - Tampering with Data
+
+### [Severity]: [Issue Title]
+- **Threat**: [Description]
+- **Location**: `path/to/file.rb:45`
+- **Risk/Impact**: [Worst case scenario]
+- **Mitigation**: [Specific fix with code example]
+
+## R - Repudiation
+[Findings]
+
+## I - Information Disclosure
+[Findings]
+
+## D - Denial of Service
+[Findings]
+
+## E - Elevation of Privilege
+[Findings]
+
+---
+
+## Top 5 Critical Findings
+
+1. **[Issue]** (Severity) - [Brief description]
+2. ...
+
+## Immediate Action Plan
+
+1. [Priority 1 action]
+2. [Priority 2 action]
+3. [Priority 3 action]
+```
+
+## Examples
+
+### Example 1: Rails Controller Review
+
+**User:** "Perform a threat model on the UsersController"
+
+**Response:**
+
+```markdown
+# Security Threat Model - UsersController
+
+## S - Spoofing Identity
+
+No critical issues found.
+
+## T - Tampering with Data
+
+### 🔴 High: Mass Assignment Vulnerability
+
+- **Threat**: Missing strong parameters allows attackers to modify any user attribute
+- **Location**: `app/controllers/users_controller.rb:23`
+- **Risk/Impact**: Attacker could set `admin: true` or modify other users' data
+- **Mitigation**: Replace `params.permit!` with explicit whitelist:
+
+```ruby
+def user_params
+  params.require(:user).permit(:name, :email, :phone)
+end
+```
+
+## R - Repudiation
+
+### 🟡 Medium: Missing Audit Trail
+
+- **Threat**: User profile changes are not logged
+- **Location**: `app/controllers/users_controller.rb:45-60`
+- **Risk/Impact**: Cannot trace who made changes for compliance
+- **Mitigation**: Add audit logging:
+
+```ruby
+after_action :log_user_update, only: [:update]
+
+def log_user_update
+  AuditLog.create!(
+    action: 'user_update',
+    user_id: current_user.id,
+    target_id: @user.id,
+    changes: @user.saved_changes
+  )
+end
+```
+
+## I - Information Disclosure
+
+### 🟡 Medium: Sensitive Data in Logs
+
+- **Threat**: Password logged in plaintext during update
+- **Location**: `app/controllers/users_controller.rb:52`
+- **Risk/Impact**: Credentials in logs accessible to support staff
+- **Mitigation**: Add to `config/initializers/filter_parameter_logging.rb`:
+
+```ruby
+Rails.application.config.filter_parameters += [:password, :ssn, :bank_account]
+```
+
+## D - Denial of Service
+
+No issues found.
+
+## E - Elevation of Privilege
+
+### 🔴 Critical: Missing Authorization Check
+
+- **Threat**: Any user can update any other user's profile
+- **Location**: `app/controllers/users_controller.rb:40`
+- **Risk/Impact**: Complete account takeover possible
+- **Mitigation**: Add authorization:
+
+```ruby
+def update
+  @user = User.find(params[:id])
+  authorize! :update, @user  # Add this line
+  # ... rest of method
+end
+```
+
+---
+
+## Top 5 Critical Findings
+
+1. **Missing Authorization** (Critical) - Any user can modify any account
+2. **Mass Assignment** (High) - All user attributes modifiable
+3. **Audit Trail** (Medium) - No change logging for compliance
+4. **Sensitive Logging** (Medium) - Passwords in logs
+5. **No rate limiting** (Low) - Brute force possible on update
+
+## Immediate Action Plan
+
+1. Add authorization check to update action (Critical - today)
+2. Implement strong parameters (High - today)
+3. Add password to filtered parameters (Medium - this sprint)
+4. Implement audit logging (Medium - this sprint)
+```
+
+## Severity Levels
+
+| Level | Criteria | Response Time |
+|-------|----------|---------------|
+| 🔴 Critical | Exploitable without auth, data breach risk | Immediate |
+| 🟠 High | Exploitable with low privilege, significant impact | Today |
+| 🟡 Medium | Requires specific conditions, moderate impact | This sprint |
+| 🟢 Low | Limited impact, difficult to exploit | Backlog |
+
+## Common Patterns to Flag
+
+### Rails Bad Patterns
+
+```ruby
+# Mass assignment
+User.new(params[:user])
+User.create(params.permit!)
+
+# SQL injection
+User.where("email = '#{params[:email]}'")
+User.find_by_sql("SELECT * FROM users WHERE name = '#{name}'")
+
+# XSS via raw HTML
+<%= raw @user.bio %>
+<%= @user.bio.html_safe %>
+
+# Insecure deserialization
+Marshal.load(params[:data])
+YAML.load(user_input)
+```
+
+### TypeScript Bad Patterns
+
+```typescript
+// XSS vulnerability
+element.innerHTML = userInput;
+<div dangerouslySetInnerHTML={{ __html: userInput }} />
+
+// Code injection
+eval(userProvidedCode);
+new Function(userInput)();
+
+// Hardcoded secret
+const API_KEY = 'sk_live_abc123def456';
+
+// SSRF vulnerability  
+fetch(params.callback_url);
+axios.get(userProvidedUrl);
+```
+
+## Related Skills
+
+- `code-review-checklist.mdc` - General code review
+- Security docs in Confluence (GRC team)
+
+## References
+
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
+- [Rails Security Guide](https://guides.rubyonrails.org/security.html)
+- [STRIDE Threat Modeling](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)

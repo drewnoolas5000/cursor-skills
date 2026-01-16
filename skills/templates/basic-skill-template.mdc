@@ -1,0 +1,60 @@
+---
+description: [One-line description shown in Cursor's skill picker]
+globs: [optional: file patterns like "*.rb" or "*.ts"]
+alwaysApply: false
+---
+
+# [Skill Name]
+
+## Overview
+
+[2-3 sentences explaining what this skill does and why someone would use it]
+
+## When to Use
+
+- [Scenario 1]
+- [Scenario 2]
+- [Scenario 3]
+
+## Guidelines
+
+[Clear, step-by-step instructions for the AI. Use numbered lists for sequential steps, bullet points for options.]
+
+### Step 1: [First Action]
+
+[Description of what to do]
+
+### Step 2: [Second Action]
+
+[Description of what to do]
+
+### Step 3: [Output Format]
+
+[Describe the expected output format - use tables, code blocks, or bullet points as examples]
+
+## Examples
+
+### Example 1: [Scenario Name]
+
+**User request:** "[Example prompt the user might type]"
+
+**Expected output:**
+
+[Show what the AI should produce]
+
+### Example 2: [Another Scenario]
+
+**User request:** "[Example prompt]"
+
+**Expected output:**
+
+[Show what the AI should produce]
+
+## Common Mistakes to Avoid
+
+- ❌ [Thing not to do]
+- ✅ [What to do instead]
+
+## Related Skills
+
+- `related-skill-name.mdc` - [brief description]

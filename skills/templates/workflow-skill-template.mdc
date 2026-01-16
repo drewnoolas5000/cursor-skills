@@ -1,0 +1,124 @@
+---
+description: [One-line description of this data-driven workflow]
+globs:
+alwaysApply: false
+---
+
+# [Workflow Name]
+
+## Overview
+
+[2-3 sentences explaining what this workflow accomplishes and the value it provides]
+
+**Output Location:** `[path/to/output/file.md]`
+
+## When to Use This Skill
+
+- [Trigger scenario 1, e.g., "Beginning of each month"]
+- [Trigger scenario 2, e.g., "Before quarterly reviews"]
+- [Trigger scenario 3, e.g., "When asked to 'run the X report'"]
+
+## Execution Process
+
+### Step 1: [Preparation/Setup]
+
+[What needs to be determined before starting - date ranges, parameters, etc.]
+
+**Example:**
+- Start date: [how to calculate]
+- End date: [how to calculate]
+
+### Step 2: [Data Collection]
+
+[Which queries or data sources to access]
+
+**Required Queries:**
+
+| Query ID | Purpose | Parameters |
+|----------|---------|------------|
+| [ID] | [What it fetches] | param1: value, param2: value |
+| [ID] | [What it fetches] | param1: value |
+
+### Step 3: [Processing/Calculations]
+
+[What to calculate from the raw data]
+
+| Metric | Calculation |
+|--------|-------------|
+| [Metric 1] | [Formula or method] |
+| [Metric 2] | [Formula or method] |
+
+### Step 4: [Analysis/Categorization]
+
+[How to interpret the results - thresholds, flags, etc.]
+
+| Category | Threshold | Action |
+|----------|-----------|--------|
+| ✅ Good | [condition] | [what it means] |
+| ⚠️ Caution | [condition] | [what it means] |
+| 🔴 Critical | [condition] | [what it means] |
+
+### Step 5: [Output Generation]
+
+[Format and save the results]
+
+## Output Template
+
+```markdown
+# [Report Title]
+
+**Period:** [Date Range]
+**Generated:** [Current Date]
+
+---
+
+## Section 1: [Summary]
+[Content guidance]
+
+## Section 2: [Details]
+[Content guidance]
+
+## Section 3: [Recommendations]
+[Content guidance]
+```
+
+## Key Thresholds
+
+| Metric | Good | Caution | Concern |
+|--------|------|---------|---------|
+| [Metric 1] | [range] | [range] | [range] |
+| [Metric 2] | [range] | [range] | [range] |
+
+## Example Invocations
+
+**Standard run:**
+> "[Example user prompt 1]"
+> "[Example user prompt 2]"
+
+**With specific parameters:**
+> "[Example with date range]"
+> "[Example with filter]"
+
+## Data Sources
+
+| Query | Purpose | URL |
+|-------|---------|-----|
+| [ID] | [Description] | [link] |
+| [ID] | [Description] | [link] |
+
+## Error Handling
+
+| Issue | Symptom | Resolution |
+|-------|---------|------------|
+| [Problem 1] | [What you see] | [How to fix] |
+| [Problem 2] | [What you see] | [How to fix] |
+
+## Related Skills
+
+- `[related-skill].mdc` - [when to use instead]
+
+## Notes
+
+- [Important consideration 1]
+- [Important consideration 2]
+- [Seasonal or timing considerations]

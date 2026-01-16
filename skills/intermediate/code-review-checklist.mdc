@@ -1,0 +1,237 @@
+---
+description: Systematic code review checklist for Ruby and TypeScript changes
+globs: 
+alwaysApply: false
+---
+
+# Code Review Checklist
+
+## Overview
+
+A structured approach to reviewing pull requests. This skill helps ensure consistent, thorough code reviews that catch common issues before they reach production.
+
+## When to Use
+
+- Reviewing any pull request
+- Self-reviewing before requesting review
+- Training new team members on review practices
+- When asked to "review this code"
+
+## Guidelines
+
+### Step 1: Understand the Context
+
+Before diving into code:
+
+1. Read the PR description completely
+2. Understand the problem being solved
+3. Check linked tickets/issues for requirements
+4. Note the scope: is this a bug fix, feature, or refactor?
+
+### Step 2: Review for Correctness
+
+| Check | Questions to Ask |
+|-------|------------------|
+| Logic | Does the code do what the PR claims? |
+| Edge cases | What happens with empty, nil, or extreme values? |
+| Error handling | Are errors caught and handled appropriately? |
+| Data integrity | Could this corrupt data in any scenario? |
+
+### Step 3: Review for Security
+
+| Check | What to Look For |
+|-------|------------------|
+| Authorization | Are permissions checked before actions? |
+| Input validation | Is user input sanitized? |
+| SQL injection | Are queries parameterized? |
+| XSS | Is output properly escaped? |
+| Secrets | Are credentials hardcoded? |
+
+### Step 4: Review for Quality
+
+| Check | Questions to Ask |
+|-------|------------------|
+| Readability | Can you understand it in one pass? |
+| Naming | Do names describe purpose, not implementation? |
+| Complexity | Could this be simpler? |
+| DRY | Is there duplicated logic? |
+| Tests | Are tests meaningful, not just coverage? |
+
+### Step 5: Review for Performance
+
+| Check | What to Look For |
+|-------|------------------|
+| N+1 queries | Are associations preloaded? |
+| Indexing | Will queries hit indexes? |
+| Memory | Could this load too much data? |
+| Async | Should slow operations be background jobs? |
+
+### Step 6: Provide Actionable Feedback
+
+Use this format:
+
+| Prefix | Meaning | Blocking? |
+|--------|---------|-----------|
+| 🔴 **Blocker:** | Must fix before merge | Yes |
+| 🟡 **Suggestion:** | Recommended improvement | No |
+| 🟢 **Nitpick:** | Style preference | No |
+| 💭 **Question:** | Need clarification | Maybe |
+| 👍 **Praise:** | Highlight good work | No |
+
+## Output Format
+
+```markdown
+## Code Review: [PR Title]
+
+### Summary
+[1-2 sentence overview of the changes]
+
+### ✅ What Looks Good
+- [Positive observation 1]
+- [Positive observation 2]
+
+### 🔴 Blockers (Must Fix)
+
+#### 1. [Issue Title]
+**Location:** `path/to/file.rb:45`
+
+**Problem:** [Description of the issue]
+
+**Suggestion:**
+```ruby
+# Suggested fix
+```
+
+### 🟡 Suggestions (Recommended)
+
+#### 1. [Improvement Title]
+**Location:** `path/to/file.rb:67`
+
+[Description and suggested approach]
+
+### 🟢 Nitpicks (Optional)
+
+- Line 23: Consider renaming `x` to `employee_count`
+- Line 89: Extra blank line
+
+### 💭 Questions
+
+1. [Question about design decision]
+2. [Question about edge case]
+
+### ✅ Approval Status
+
+[Approved / Approved with suggestions / Request changes]
+```
+
+## Examples
+
+### Example 1: Security Issue
+
+**Code:**
+```ruby
+def find_user
+  User.where("email = '#{params[:email]}'")
+end
+```
+
+**Review Comment:**
+
+🔴 **Blocker:** SQL Injection Vulnerability
+
+**Location:** `app/controllers/users_controller.rb:23`
+
+**Problem:** Direct string interpolation in SQL allows attackers to inject malicious queries.
+
+**Fix:**
+```ruby
+def find_user
+  User.where(email: params[:email])
+end
+```
+
+### Example 2: Performance Issue
+
+**Code:**
+```ruby
+def company_report(company)
+  company.employees.each do |employee|
+    puts employee.department.name
+  end
+end
+```
+
+**Review Comment:**
+
+🟡 **Suggestion:** N+1 Query
+
+**Location:** `app/services/reports/company_report.rb:15`
+
+**Problem:** Each iteration loads the department separately, causing N+1 queries.
+
+**Fix:**
+```ruby
+def company_report(company)
+  company.employees.includes(:department).each do |employee|
+    puts employee.department.name
+  end
+end
+```
+
+### Example 3: Positive Feedback
+
+**Code:**
+```ruby
+def calculate_bonus(employee, performance_rating)
+  return Money.zero if performance_rating < MINIMUM_RATING
+
+  base_bonus = employee.salary * BONUS_PERCENTAGE
+  base_bonus * performance_rating.multiplier
+end
+```
+
+**Review Comment:**
+
+👍 **Praise:** Great use of early return for the edge case, and clear variable naming. The constants make the business logic self-documenting.
+
+## Checklist Summary
+
+Quick reference for every review:
+
+### Must Check
+- [ ] PR description explains the "why"
+- [ ] Tests cover the happy path
+- [ ] Tests cover edge cases
+- [ ] No hardcoded secrets
+- [ ] SQL queries are parameterized
+- [ ] User input is validated
+
+### Should Check
+- [ ] N+1 queries avoided
+- [ ] Error messages are helpful
+- [ ] Logging is appropriate
+- [ ] Code is readable without comments
+
+### Nice to Check
+- [ ] Variable names are clear
+- [ ] No unnecessary complexity
+- [ ] Consistent style with codebase
+
+## Common Mistakes in Reviews
+
+- ❌ Only checking if tests pass
+- ✅ Actually read the test assertions
+
+- ❌ Nitpicking style over substance
+- ✅ Focus on correctness and security first
+
+- ❌ Rubber-stamping PRs from senior devs
+- ✅ Review all code equally
+
+- ❌ Blocking on preferences
+- ✅ Distinguish blockers from suggestions
+
+## Related Skills
+
+- `threat-model-analysis.mdc` - Deep security review
+- `feature-flag-review.mdc` - For flag-related changes
